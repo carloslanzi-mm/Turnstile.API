@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
 
+from flambda_app.repositories.v1.mysql.access_repository import AccessRepository
+
 
 class TurnstileVO:
     """
@@ -70,4 +72,27 @@ class TurnstileVO:
             "created_at": self.created_at,
             "updated_at": self.updated_at,
             "deleted_at": self.deleted_at
+        }
+
+    def access_records(self):
+        if not self.uuid:
+            return None
+
+        access_repository = AccessRepository()
+        access_data = access_repository.list(
+            where={"turnstile_uuid": self.uuid}, fields=['type', 'timestamp'])
+        return access_data if access_data else None
+
+    def to_api_access_records_response(self):
+        """
+        Prepare the data for API response.
+        """
+        return {
+            "uuid": self.uuid,
+            "name": self.name,
+            "is_active": self.is_active,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "deleted_at": self.deleted_at,
+            "access_records": self.access_records()
         }

@@ -109,29 +109,29 @@ class AccessRepository(AbstractRepository):
             self._close()
         return None
 
-    # def list(self, where: dict, offset=None, limit=None, fields: list = None, sort_by=None,
-    #          order_by=None):
-    #     fields = '*' if not fields else ",".join([self.BASE_TABLE_ALIAS + '.' + v for v in fields])
-    #     order_by = order_by or Order.ASC
-    #     sort_by = sort_by or self.PK
-    #     sort_by = ",".join([self.BASE_TABLE_ALIAS + '.' + v for v in sort_by]) if isinstance(
-    #         sort_by, list) else self.BASE_TABLE_ALIAS + '.' + sort_by
-    #
-    #     sql = "SELECT {} FROM {} as {}".format(fields, self.BASE_TABLE, self.BASE_TABLE_ALIAS)
-    #     if where:
-    #         sql += " WHERE {}".format(self.build_where(where))
-    #     sql += " ORDER BY {} {} LIMIT {},{}".format(sort_by, order_by,
-    #                                                 Pagination.validate(PaginationType.OFFSET,
-    #                                                                     offset),
-    #                                                 Pagination.validate(PaginationType.LIMIT,
-    #                                                                     limit))
-    #
-    #     try:
-    #         result = self._execute(sql)
-    #         return result.fetchall()
-    #     except Exception as err:
-    #         self.logger.error(err)
-    #         self._exception = err
+    def list(self, where: dict, offset=None, limit=None, fields: list = None, sort_by=None,
+             order_by=None):
+        fields = '*' if not fields else ",".join([self.BASE_TABLE_ALIAS + '.' + v for v in fields])
+        order_by = order_by or Order.ASC
+        sort_by = sort_by or self.PK
+        sort_by = ",".join([self.BASE_TABLE_ALIAS + '.' + v for v in sort_by]) if isinstance(
+            sort_by, list) else self.BASE_TABLE_ALIAS + '.' + sort_by
+
+        sql = "SELECT {} FROM {} as {}".format(fields, self.BASE_TABLE, self.BASE_TABLE_ALIAS)
+        if where:
+            sql += " WHERE {}".format(self.build_where(where))
+        sql += " ORDER BY {} {} LIMIT {},{}".format(sort_by, order_by,
+                                                    Pagination.validate(PaginationType.OFFSET,
+                                                                        offset),
+                                                    Pagination.validate(PaginationType.LIMIT,
+                                                                        limit))
+
+        try:
+            result = self._execute(sql)
+            return result.fetchall()
+        except Exception as err:
+            self.logger.error(err)
+            self._exception = err
 
     def build_where(self, where):
         where_list = []

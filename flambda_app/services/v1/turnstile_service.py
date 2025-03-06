@@ -113,8 +113,13 @@ class TurnstileService:
         try:
             data = self.turnstile_repository.get(
                 id, key=self.turnstile_repository.UUID_KEY, where=where, fields=request['fields'])
+
             if data:
-                data = TurnstileVO(data, default_values=False).to_api_response()
+                if '/access/' in request['path']:
+                    data = data.to_api_access_records_response()
+                else:
+                    data = data.to_api_response()
+
             if self.turnstile_repository.get_exception():
                 raise DatabaseException(MessagesEnum.FIND_ERROR)
         except Exception as err:

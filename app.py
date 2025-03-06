@@ -1021,7 +1021,7 @@ def employee_delete(uuid):
 
 
 @APP.route(API_ROOT + '/v1/access', methods=['POST'])
-def access_get():
+def access_create():
     request = ApiRequest().parse_request(APP)
     LOGGER.info(f'request: {request}')
 
@@ -1037,6 +1037,34 @@ def access_get():
         LOGGER.error(error)
         if not isinstance(error, ValidationException):
             error = ApiException(MessagesEnum.CREATE_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+
+
+@APP.route(API_ROOT + '/v1/access/<uuid>', methods=['GET'])
+def access_records(uuid):
+    request = ApiRequest().parse_request(APP)
+    LOGGER.info(f'request: {request}')
+
+    status_code = 200
+    response = ApiResponse(request)
+    response.set_hateos(False)
+
+    # Instantiate manager and service for turnstile
+    manager = TurnstileManager(logger=LOGGER, turnstile_service=TurnstileService(logger=LOGGER))
+    manager.debug(DEBUG)
+
+    try:
+        response.set_data(manager.get(request.to_dict(), uuid))
+
+    except CustomException as error:
+        LOGGER.error(error)
+        if not isinstance(error, ValidationException):
+            error = ApiException(MessagesEnum.FIND_ERROR)
         status_code = 400
         if manager.exception:
             error = manager.exception
