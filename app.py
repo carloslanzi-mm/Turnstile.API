@@ -954,7 +954,7 @@ def turnstile_get(uuid):
 
 
 @APP.route('/v1/turnstile/<uuid>', methods=['DELETE'])
-def employee_delete(uuid):
+def turnstile_delete(uuid):
     """
     Turnstile delete route
 
