@@ -18,8 +18,6 @@ from flambda_app.http_helper import CUSTOM_DEFAULT_HEADERS, set_hateos_links, se
 from flambda_app.http_resources.request import ApiRequest
 from flambda_app.http_resources.response import ApiResponse
 from flambda_app.logging import get_logger, set_debug_mode
-from flambda_app.openapi import api_schemas
-from flambda_app.openapi import spec, get_doc, generate_openapi_yml
 from flambda_app.services.access_manager import AccessManager
 from flambda_app.services.healthcheck_manager import HealthCheckManager
 from flambda_app.services.product_manager import ProductManager
@@ -658,36 +656,6 @@ def product_soft_update(uuid):
 # *************
 @APP.route(API_ROOT + '/v1/turnstile', methods=['POST'])
 def turnstile_create():
-    """
-    Turnstile create route
-
-    :rtype flask.Response
-        ---
-        post:
-            summary: Turnstile Create
-            requestBody:
-                description: 'Turnstile to be created'
-                required: true
-                content:
-                    application/json:
-                        schema: TurnstileCreateRequestSchema
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: TurnstileCreateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: TurnstileCreateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: TurnstileCreateErrorResponseSchema
-    """
     request = ApiRequest().parse_request(APP)
     LOGGER.info(f'request: {request}')
 
@@ -713,49 +681,6 @@ def turnstile_create():
 
 @APP.route('/v1/turnstile/<uuid>', methods=['PATCH'])
 def turnstile_update(uuid):
-    """
-    Turnstile update route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://madeiramadeira.atlassian.net/wiki/spaces/CAR/pages/2244149708/WIP+-+Guidelines+-+RESTful+e+HATEOS
-
-    :rtype flask.Response
-        ---
-        patch:
-            summary: Update Turnstile information
-            parameters:
-            - in: path
-              name: uuid
-              description: "Turnstile UUID"
-              required: true
-              schema:
-                type: string
-                format: uuid
-                example: 8d3443d2-5b08-47dd-b8e6-6f8175114ec0
-            requestBody:
-                description: 'Turnstile data to be updated'
-                required: true
-                content:
-                    application/json:
-                        schema: TurnstileUpdateRequestSchema
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema: TurnstileUpdateResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: TurnstileUpdateErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: TurnstileUpdateErrorResponseSchema
-            """
     request_data = ApiRequest().parse_request(APP)
     LOGGER.info(f'Request data: {request_data}')
 
@@ -785,74 +710,6 @@ def turnstile_update(uuid):
 
 @APP.route(API_ROOT + '/v1/turnstile', methods=['GET'])
 def turnstile_list():
-    """
-    Turnstile List route
-
-    :return Endpoint with RESTful pattern for listing turnstiles
-
-    # pylint: disable=line-too-long
-    See https://madeiramadeira.atlassian.net/wiki/spaces/CAR/pages/2244149708/WIP+-+Guidelines+-+RESTful+e+HATEOS
-
-    :rtype flask.Response
-
-        ---
-        get:
-            summary: Turnstile List
-            parameters:
-            - name: limit
-              in: query
-              description: "List limit"
-              required: false
-              schema:
-                type: integer
-                example: 20
-            - name: offset
-              in: query
-              description: "List offset"
-              required: false
-              schema:
-                type: integer
-                example: 0
-            - name: fields
-              in: query
-              description: "Filter fields with comma"
-              required: false
-              schema:
-                type: string
-                example: name,is_active
-            - name: order_by
-              in: query
-              description: "Ordination of list"
-              required: false
-              schema:
-                type: string
-                enum:
-                 - "asc"
-                 - "desc"
-            - name: sort_by
-              in: query
-              description: "Sorting of the list"
-              required: false
-              schema:
-                type: string
-                example: name
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: HateosTurnstileListResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: TurnstileListErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: TurnstileListErrorResponseSchema
-    """
     request = ApiRequest().parse_request(APP)
     LOGGER.info(f'request: {request}')
 
@@ -885,44 +742,6 @@ def turnstile_list():
 
 @APP.route(API_ROOT + '/v1/turnstile/<uuid>', methods=['GET'])
 def turnstile_get(uuid):
-    """
-    Turnstile Get Item route
-
-    :return Endpoint with RESTful pattern for getting a single turnstile
-
-    # pylint: disable=line-too-long
-    See https://madeiramadeira.atlassian.net/wiki/spaces/CAR/pages/2244149708/WIP+-+Guidelines+-+RESTful+e+HATEOS
-
-    :rtype flask.Response
-        ---
-        get:
-            summary: Turnstile Get Item
-            parameters:
-            - in: path
-              name: uuid
-              description: "UUID of the turnstile"
-              required: true
-              schema:
-                type: string
-                format: uuid
-                example: 4bcad46b-6978-488f-8153-1c49f8a45244
-            responses:
-                200:
-                    description: Success response
-                    content:
-                        application/json:
-                            schema: HateosTurnstileGetResponseSchema
-                4xx:
-                    description: Error response
-                    content:
-                        application/json:
-                            schema: TurnstileGetErrorResponseSchema
-                5xx:
-                    description: Service fail response
-                    content:
-                        application/json:
-                            schema: TurnstileGetErrorResponseSchema
-    """
     request = ApiRequest().parse_request(APP)
     LOGGER.info(f'request: {request}')
 
@@ -955,45 +774,6 @@ def turnstile_get(uuid):
 
 @APP.route('/v1/turnstile/<uuid>', methods=['DELETE'])
 def turnstile_delete(uuid):
-    """
-    Turnstile delete route
-
-    :return Endpoint with RESTful pattern
-
-    # pylint: disable=line-too-long
-    See https://madeiramadeira.atlassian.net/wiki/spaces/CAR/pages/2244149708/WIP+-+Guidelines+-+RESTful+e+HATEOS
-
-    :rtype flask.Response
-            ---
-            delete:
-                summary: Soft Turnstile Delete
-                parameters:
-                - in: path
-                  name: uuid
-                  description: "Turnstile Id"
-                  required: true
-                  schema:
-                    type: string
-                    format: uuid
-                    example: 4bcad46b-6978-488f-8153-1c49f8a45244
-                responses:
-                    200:
-                        description: Success response
-                        content:
-                            application/json:
-                                schema: TurnstileSoftDeleteResponseSchema
-                    4xx:
-                        description: Error response
-                        content:
-                            application/json:
-                                schema: TurnstileSoftDeleteErrorResponseSchema
-                    5xx:
-                        description: Service fail response
-                        content:
-                            application/json:
-                                schema: TurnstileSoftDeleteErrorResponseSchema
-    """
-
     request = ApiRequest().parse_request(APP)
     LOGGER.info(f'Request: {request}')
 
@@ -1076,26 +856,23 @@ def access_records(uuid):
 # *************
 # doc
 # *************
-spec.path(view=alive, path=API_ROOT + "/alive", operations=get_doc(alive))
+# spec.path(view=alive, path=API_ROOT + "/alive", operations=get_doc(alive))
+
+
 # *************
 # product
 # *************
-spec.path(view=product_list,
-          path="/v1/product", operations=get_doc(product_list))
-spec.path(view=product_get,
-          path="/v1/product/{uuid}", operations=get_doc(product_get))
-spec.path(view=product_create,
-          path="/v1/product", operations=get_doc(product_create))
-spec.path(view=product_update,
-          path="/v1/product/{uuid}", operations=get_doc(product_update))
-spec.path(view=product_soft_update,
-          path="/v1/product/{uuid}", operations=get_doc(product_soft_update))
-spec.path(view=product_delete,
-          path="/v1/product/{uuid}", operations=get_doc(product_delete))
+# spec.path(view=product_list,
+#           path="/v1/product", operations=get_doc(product_list))
+# spec.path(view=product_get,
+#           path="/v1/product/{uuid}", operations=get_doc(product_get))
+# spec.path(view=product_create,
+#           path="/v1/product", operations=get_doc(product_create))
+# spec.path(view=product_update,
+#           path="/v1/product/{uuid}", operations=get_doc(product_update))
+# spec.path(view=product_soft_update,
+#           path="/v1/product/{uuid}", operations=get_doc(product_soft_update))
+# spec.path(view=product_delete,
+#           path="/v1/product/{uuid}", operations=get_doc(product_delete))
 print_routes(APP, LOGGER)
 LOGGER.info(f'Running at {ENV}')
-
-# generate de openapi.yml
-generate_openapi_yml(spec, LOGGER, force=True)
-
-api_schemas.register()

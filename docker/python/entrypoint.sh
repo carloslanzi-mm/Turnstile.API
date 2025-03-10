@@ -16,6 +16,9 @@ fi
 # execute the boot.sh
 bash ./scripts/boot.sh
 
+# create swagger documentation (/public/swagger/openapi.yml)
+python3 swagger_docs.py
+
 # execute the flask
 # flask run --host 0.0.0.0
 python3 server.py

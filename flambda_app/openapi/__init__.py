@@ -17,19 +17,11 @@ from flambda_app.logging import get_logger
 env = get_environment()
 
 servers = [
-    {
-        "url": os.environ["API_SERVER"] if "API_SERVER" in os.environ else None,
-        "description": os.environ["API_SERVER_DESCRIPTION"] if "API_SERVER_DESCRIPTION" in os.environ else None
-    }
-]
-
-if env == "development":
-    servers.append({
-        "url": os.environ["LOCAL_API_SERVER"] if "LOCAL_API_SERVER" in os.environ else "http://localhost:5000",
-        "description": os.environ["LOCAL_API_SERVER_DESCRIPTION"]
-        if "LOCAL_API_SERVER_DESCRIPTION" in os.environ
-        else "Development server"
-    })
+        {
+            "url": os.environ.get("API_SERVER", "http://localhost:5000"),
+            "description": os.environ.get("API_SERVER_DESCRIPTION", "Default API server")
+        }
+    ]
 
 
 spec = APISpec(
@@ -60,13 +52,13 @@ def generate_openapi_yml(spec_object, logger, force=False):
 # doc
 def get_doc(fn):
     logger = get_logger()
-    doc_yml = ''
+    doc_yml = {}
     try:
-
         fn_doc = fn.__doc__
         if fn_doc:
-            fn_doc = fn_doc.split('---')[-1]
-            doc_yml = yaml.safe_load(fn_doc)
+            fn_doc = fn_doc.split('---')[-1]  # Extrair o bloco de YAML
+            doc_yml = yaml.safe_load(fn_doc)  # Converte o YAML em um dicionário
     except Exception as err:
         logger.error(err)
     return doc_yml
+
