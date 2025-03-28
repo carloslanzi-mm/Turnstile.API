@@ -1,7 +1,9 @@
 from datetime import datetime
 
-from flambda_app.request_control import Order, Pagination, PaginationType
+from flambda_app.enums.messages import MessagesEnum
+from flambda_app.exceptions import DatabaseException
 from flambda_app.repositories.v1.mysql import AbstractRepository
+from flambda_app.request_control import Order, Pagination, PaginationType
 from flambda_app.vos.access import AccessV0
 
 
@@ -201,3 +203,34 @@ class AccessRepository(AbstractRepository):
     #         self._close()
     #
     #     return result
+
+    def list_by_date(self, date, where=None, offset=0, limit=20, order_by='desc', sort_by='created_at', fields=None):
+        # Formata a data para formato SQL (ISO)
+        date_str = date.strftime('%Y-%m-%d')
+
+        # Define campos específicos na ordem solicitada
+        fields_str = f"{self.BASE_TABLE_ALIAS}.turnstile_uuid, {self.BASE_TABLE_ALIAS}.type, {self.BASE_TABLE_ALIAS}.timestamp, {self.BASE_TABLE_ALIAS}.created_at"
+
+        # Consulta SQL simplificada - apenas formato ISO
+        sql = f"""
+            SELECT {fields_str}
+            FROM {self.BASE_TABLE} as {self.BASE_TABLE_ALIAS}
+            WHERE DATE({self.BASE_TABLE_ALIAS}.timestamp) = '{date_str}'
+            ORDER BY {self.BASE_TABLE_ALIAS}.timestamp {order_by}
+            LIMIT {limit} OFFSET {offset}
+        """
+
+        try:
+            result = self._execute(sql)
+            result = result.fetchall()
+
+            data = []
+            for item in result:
+                data.append(AccessV0(item))
+
+            return data
+        except Exception as err:
+            self.logger.error(f"SQL: {sql}")
+            self.logger.error(err)
+            self._exception = DatabaseException(MessagesEnum.QUERY_ERROR)
+            return []

@@ -14,8 +14,8 @@ from flambda_app.enums.messages import MessagesEnum
 from flambda_app.exceptions import ApiException
 from flambda_app.http_helper import CUSTOM_DEFAULT_HEADERS
 from flambda_app.http_resources.hateos import HateosLink, HateosMeta
-from flambda_app.request_control import Pagination
 from flambda_app.logging import get_logger
+from flambda_app.request_control import Pagination
 
 
 class ApiResponse:
@@ -55,22 +55,15 @@ class ApiResponse:
         # data
         self.data = data
 
-        # has method dict to convert
-        if helper.has_method(self.data, 'to_dict'):
-            self.data = data.to_dict()
-
-        if isinstance(self.data, list):
-            # has method dict to convert
+        # Verificar se data é uma lista e se tem elementos antes de tentar acessar o primeiro
+        if isinstance(self.data, list) and len(self.data) > 0:
             if helper.has_method(self.data[0], 'to_dict'):
-                dict_data = []
-                for item in self.data:
-                    dict_data.append(item.to_dict())
-                self.data = dict_data
-
-            self.count = len(self.data)
+                self.count = len(self.data)
+            else:
+                self.count = len(self.data)
         else:
-            self.count = 1
-            self.total = 1
+            # Lista vazia ou não é uma lista
+            self.count = 0 if isinstance(self.data, list) else 1
 
     def set_total(self, total):
         self.total = total

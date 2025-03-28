@@ -3,7 +3,7 @@ import copy
 from flambda_app import helper
 from flambda_app.database.mysql import MySQLConnector
 from flambda_app.enums.messages import MessagesEnum
-from flambda_app.exceptions import DatabaseException, ValidationException, ServiceException
+from flambda_app.exceptions import DatabaseException, ServiceException, ValidationException
 from flambda_app.filter_helper import filter_xss_injection
 from flambda_app.helper import get_function_name
 from flambda_app.logging import get_logger
@@ -228,3 +228,54 @@ class AccessService:
                 exception.params = [filter_xss_injection(data[field]), filter_xss_injection(field)]
                 exception.set_message_params()
                 raise exception
+
+    def list_by_date(self, request: dict):
+        self.logger.info(f'method: {get_function_name()} - request: {request}')
+
+        data = []
+        where = request.get('where', {})
+
+        # Verifica e valida o parâmetro de data
+        date_param = request.get('query_string_args', {}).get('date')
+        if not date_param:
+            self.exception = ValidationException(MessagesEnum.VALIDATION_ERROR)
+            self.exception.params = ['date', 'required']
+            self.exception.set_message_params()
+            return data
+
+        # Validar e converter a data - apenas formato ISO YYYY-MM-DD
+        try:
+            date = helper.parse_date(date_param)
+        except Exception as err:
+            self.logger.error(err)
+            self.exception = ValidationException(MessagesEnum.VALIDATION_ERROR)
+            self.exception.params = ['date', 'format must be YYYY-MM-DD']
+            self.exception.set_message_params()
+            return data
+
+        try:
+            offset = request.get('offset', 0)
+            limit = request.get('limit', 20)
+            order_by = request.get('order_by', 'desc')
+            sort_by = request.get('sort_by', 'created_at')
+            fields = request.get('fields', None)
+
+            data = self.access_repository.list_by_date(
+                date=date, where=where, offset=offset, limit=limit,
+                order_by=order_by, sort_by=sort_by, fields=fields)
+
+            # Converter objetos AccessV0 para formato JSON
+            if data:
+                vo_data = []
+                for item in data:
+                    vo_data.append(item.to_api_response())
+                data = vo_data
+
+            if self.access_repository.get_exception():
+                raise DatabaseException(MessagesEnum.LIST_ERROR)
+
+        except Exception as err:
+            self.logger.error(err)
+            self.exception = err
+
+        return data

@@ -7,14 +7,13 @@ import json
 import os
 import sys
 import traceback
-from datetime import datetime
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
-from boot import get_environment as get_env
 
 import pytz
 
-from flambda_app.logging import get_logger, get_console_logger
+from boot import get_environment as get_env
+from flambda_app.logging import get_console_logger, get_logger
 
 TZ_AMERICA_SAO_PAULO = 'America/Sao_Paulo'
 
@@ -265,3 +264,22 @@ def convert_list_to_dict(item_list, key_name):
                 result[item.get(key_name)] = item
 
     return result
+
+
+def parse_date(date_str):
+    """
+    Parse a date string in format YYYY-MM-DD.
+
+    Args:
+        date_str (str): Date string in format YYYY-MM-DD
+
+    Returns:
+        datetime.date: Parsed date object
+
+    Raises:
+        ValueError: If date format is invalid
+    """
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        raise ValueError(f"Invalid date format: {date_str}. Expected format: YYYY-MM-DD")

@@ -63,3 +63,10 @@ class AccessManager:
     #         self.exception = self.access_service.exception
     #         raise self.exception
     #     return result
+
+    def list_by_date(self, request: dict):
+        data = self.access_service.list_by_date(request)
+        if (data is None or len(data) == 0) and self.access_service.exception:
+            self.exception = self.access_service.exception
+            raise self.exception
+        return data

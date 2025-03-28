@@ -6,15 +6,14 @@ import base64
 import os
 
 import boot
-from flambda_app import APP_NAME, APP_VERSION, http_helper
-from flambda_app import helper
+from flambda_app import APP_NAME, APP_VERSION, helper, http_helper
 from flambda_app.config import get_config
 from flambda_app.enums.messages import MessagesEnum
-from flambda_app.exceptions import ApiException, ValidationException, CustomException
+from flambda_app.exceptions import ApiException, CustomException, ValidationException
 from flambda_app.flambda import Flambda
 from flambda_app.helper import open_vendor_file, print_routes
-from flambda_app.http_helper import CUSTOM_DEFAULT_HEADERS, set_hateos_links, set_hateos_meta, \
-    get_favicon_32x32_data, get_favicon_16x16_data
+from flambda_app.http_helper import (CUSTOM_DEFAULT_HEADERS, get_favicon_16x16_data,
+                                     get_favicon_32x32_data, set_hateos_links, set_hateos_meta)
 from flambda_app.http_resources.request import ApiRequest
 from flambda_app.http_resources.response import ApiResponse
 from flambda_app.logging import get_logger, set_debug_mode
@@ -845,6 +844,36 @@ def access_records(uuid):
         LOGGER.error(error)
         if not isinstance(error, ValidationException):
             error = ApiException(MessagesEnum.FIND_ERROR)
+        status_code = 400
+        if manager.exception:
+            error = manager.exception
+        response.set_exception(error)
+
+    return response.get_response(status_code)
+
+
+@APP.route(API_ROOT + '/v1/access', methods=['GET'])
+def access_list_by_date():
+    request = ApiRequest().parse_request(APP)
+    LOGGER.info(f'request structure: {helper.to_json(request)}')
+    LOGGER.info(f'request: {request}')
+
+    status_code = 200
+    response = ApiResponse(request)
+    response.set_hateos(True)
+
+    manager = AccessManager(logger=LOGGER, access_service=AccessService(logger=LOGGER))
+    manager.debug(DEBUG)
+    try:
+        data = manager.list_by_date(request.to_dict())
+        response.set_data(data if data else [])
+
+        # hateos
+        response.links = None
+        set_hateos_meta(request, response)
+    except CustomException as err:
+        LOGGER.error(err)
+        error = ApiException(MessagesEnum.LIST_ERROR)
         status_code = 400
         if manager.exception:
             error = manager.exception

@@ -46,14 +46,11 @@ class AccessV0:
 
     def to_api_response(self):
         """
-        Prepare the data for API response.
+        Prepare the data for API response in the requested order.
         """
         return {
-            "id": self.id,
+            "turnstile_uuid": self.turnstile_uuid,
             "type": self.type,
             "timestamp": self.timestamp,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "deleted_at": self.deleted_at,
-            "turnstile_uuid": self.turnstile_uuid
+            "created_at": self.created_at
         }
